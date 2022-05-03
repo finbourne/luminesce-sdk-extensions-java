@@ -401,6 +401,6 @@
         <junit-version>4.13.1</junit-version>
         <hamcrest-version>1.3</hamcrest-version>
         <mockito-version>3.3.3</mockito-version>
-        <luminesce-sdk-version></luminesce-sdk-version>
+        <luminesce-sdk-version>1.7.42-SNAPSHOT</luminesce-sdk-version>
     </properties>
 </project>
