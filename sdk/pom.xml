@@ -5,7 +5,7 @@
     <artifactId>luminesce-sdk-extensions</artifactId>
     <packaging>jar</packaging>
     <name>luminesce-sdk-extensions</name>
-    <version>0.43.0</version>
+    <version>0.44.0</version>
     <url>https://github.com/finbourne/luminesce-sdk-extensions-java</url>
     <description>FINBOURNE Luminesce SDK Extensions</description>
     <scm>
