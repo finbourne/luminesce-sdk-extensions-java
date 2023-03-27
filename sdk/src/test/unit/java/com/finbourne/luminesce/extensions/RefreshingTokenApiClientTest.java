@@ -35,6 +35,7 @@ public class RefreshingTokenApiClientTest {
     private FinbourneToken finbourneToken = new FinbourneToken("access_01", "refresh_01", LocalDateTime.now());
     private FinbourneToken anotherFinbourneToken = new FinbourneToken("access_02", "refresh_01", LocalDateTime.now());
 
+    private String baseUrl = "https://fbn-qa.lusid.com";
     // call params
     private String path = "/get_portfolios";
     private String method = "GET";
@@ -62,25 +63,25 @@ public class RefreshingTokenApiClientTest {
 
     @Test
     public void buildCall_ShouldUpdateAuthHeaderAndDelegateBuildCall() throws ApiException {
-        refreshingTokenApiClient.buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
+        refreshingTokenApiClient.buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
         verify(defaultApiClient).addDefaultHeader("Authorization", "Bearer access_01");
-        verify(defaultApiClient).buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams,formParams, authNames, apiCallback);
+        verify(defaultApiClient).buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams,formParams, authNames, apiCallback);
     }
 
     @Test
     public void buildCall_ShouldUpdateAuthHeaderOnEveryCall() throws ApiException, FinbourneTokenException {
-        refreshingTokenApiClient.buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
+        refreshingTokenApiClient.buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
         verify(defaultApiClient).addDefaultHeader("Authorization", "Bearer access_01");
-        verify(defaultApiClient).buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams,  formParams, authNames, apiCallback);
+        verify(defaultApiClient).buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams,  formParams, authNames, apiCallback);
 
         // mock our token expiring and we now have an updated token to call api with
         doReturn(anotherFinbourneToken).when(tokenProvider).get();
 
         // ensure that before delegating to buildCall in the default api client we firstly update it's header to use
         // the new token
-        refreshingTokenApiClient.buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
+        refreshingTokenApiClient.buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
         verify(defaultApiClient).addDefaultHeader("Authorization", "Bearer access_02");
-        verify(defaultApiClient, times(2)).buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
+        verify(defaultApiClient, times(2)).buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
     }
 
     @Test
@@ -91,16 +92,16 @@ public class RefreshingTokenApiClientTest {
 
         thrown.expect(ApiException.class);
         thrown.expectCause(equalTo(finbourneTokenException));
-        refreshingTokenApiClient.buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
+        refreshingTokenApiClient.buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, apiCallback);
     }
 
     @Test
     public void buidCall_OnUnderlyingApiClientException_ShouldRethrowExactException() throws ApiException {
         // mocking behaviour of an exception when making a remote api call
         ApiException apiException = new ApiException("An API call failure");
-        doThrow(apiException).when(defaultApiClient).buildCall(path, method, queryParams, collectionQueryParams, body, headerParams,  cookieParams, formParams, authNames, apiCallback);
+        doThrow(apiException).when(defaultApiClient).buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams,  cookieParams, formParams, authNames, apiCallback);
         try {
-            refreshingTokenApiClient.buildCall(path, method, queryParams, collectionQueryParams, body, headerParams,  cookieParams, formParams, authNames, apiCallback);
+            refreshingTokenApiClient.buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams,  cookieParams, formParams, authNames, apiCallback);
         } catch (ApiException e){
             // ensure that the exception rethrown is the exact instance of the exception thrown by the API call and
             // is unchanged

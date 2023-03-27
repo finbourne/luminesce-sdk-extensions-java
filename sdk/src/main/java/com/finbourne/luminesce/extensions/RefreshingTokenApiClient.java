@@ -41,13 +41,13 @@ public class RefreshingTokenApiClient extends ApiClient {
     * @throws ApiException
     */
     @Override
-    public Call buildCall(String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams, Object body, Map<String, String> headerParams, Map<String, String> cookieParams,  Map<String, Object> formParams, String[] authNames, ApiCallback callback) throws ApiException {
+    public Call buildCall(String baseUrl, String path, String method, List<Pair> queryParams, List<Pair> collectionQueryParams, Object body, Map<String, String> headerParams, Map<String, String> cookieParams,  Map<String, Object> formParams, String[] authNames, ApiCallback callback) throws ApiException {
         try {
             setAccessToken(tokenProvider.get());
         } catch (FinbourneTokenException e) {
             throw new ApiException(e);
         }
-        return apiClient.buildCall(path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, callback);
+        return apiClient.buildCall(baseUrl, path, method, queryParams, collectionQueryParams, body, headerParams, cookieParams, formParams, authNames, callback);
     }
 
     private void setAccessToken(FinbourneToken accessToken) {
