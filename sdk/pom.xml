@@ -5,7 +5,7 @@
     <artifactId>luminesce-sdk-extensions</artifactId>
     <packaging>jar</packaging>
     <name>luminesce-sdk-extensions</name>
-    <version>0.79.0-OAPI-SNAPSHOT</version>
+    <version>0.79.1-OAPI-SNAPSHOT</version>
     <url>https://github.com/finbourne/luminesce-sdk-extensions-java</url>
     <description>FINBOURNE Luminesce SDK Extensions</description>
     <scm>
