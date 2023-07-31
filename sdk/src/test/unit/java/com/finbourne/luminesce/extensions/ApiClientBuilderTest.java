@@ -34,7 +34,7 @@ public class ApiClientBuilderTest {
         apiClientBuilder = spy(new ApiClientBuilder());
 
         // mock creation of default api client
-        doReturn(apiClient).when(apiClientBuilder).createApiClient();
+        doReturn(apiClient).when(apiClientBuilder).createApiClient(any(Integer.class));
         // mock default well formed finbourne token
         doReturn("access_token_01").when(finbourneToken).getAccessToken();
     }
