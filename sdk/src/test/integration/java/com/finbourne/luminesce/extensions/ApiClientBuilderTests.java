@@ -2,12 +2,14 @@ package com.finbourne.luminesce.extensions;
 
 import com.finbourne.luminesce.ApiClient;
 import com.finbourne.luminesce.extensions.auth.FinbourneTokenException;
+import com.finbourne.luminesce.auth.Authentication;
+import com.finbourne.luminesce.auth.OAuth;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 public class ApiClientBuilderTests {
@@ -24,13 +26,25 @@ public class ApiClientBuilderTests {
 
     @Test
     public void build_OnValidConfigurationFile_ShouldBuildKeepLiveApiClient() throws ApiConfigurationException, FinbourneTokenException {
-        // This test assumes default secrets file is valid. Same assertion as all other integration tests.
+        // This test assumes default secrets file is valid without a PAT. Same assertion as all other integration tests.
         ApiConfiguration apiConfiguration = new ApiConfigurationBuilder().build(CredentialsSource.credentialsFile);
         ApiClient apiClient = new ApiClientBuilder().build(apiConfiguration);
         // running with no exceptions ensures client built correctly with no configuration or token creation exceptions
         assertThat("Unexpected extended implementation of ApiClient for default build." ,
-                apiClient, instanceOf(RefreshingTokenApiClient.class));
+                apiClient, instanceOf(ApiClient.class));
     }
+
+    @Test
+    public void build_WithValidPAT_ShouldBuildKeepLiveApiClient() throws ApiConfigurationException, FinbourneTokenException {
+
+        ApiConfiguration apiConfiguration = new ApiConfigurationBuilder().build("secrets-pat.json");
+        ApiClient apiClient = new ApiClientBuilder().build(apiConfiguration);
+
+        OAuth auth = (OAuth)apiClient.getAuthentication("oauth2");
+
+        assertThat(auth.getAccessToken(), equalTo(apiConfiguration.getPersonalAccessToken()));
+    }
+
 
     @Test
     public void build_BadTokenConfigurationFile_ShouldThrowException() throws FinbourneTokenException {

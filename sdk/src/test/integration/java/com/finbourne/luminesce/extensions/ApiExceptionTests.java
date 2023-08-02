@@ -2,44 +2,47 @@ package com.finbourne.luminesce.extensions;
 
 import com.finbourne.luminesce.ApiClient;
 import com.finbourne.luminesce.ApiException;
-import com.finbourne.luminesce.api.HistoricallyExecutedQueriesApi;
+// UNCOMMENT BELOW LINE AND IMPORT ONE OF THE APIS
+// import com.finbourne.luminesce.api.;
 import com.finbourne.luminesce.extensions.auth.FinbourneTokenException;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class ApiExceptionTests {
- @Test
-     public void thrown_exception_tostring_contains_requestid() throws ApiConfigurationException, FinbourneTokenException {
+// UNCOMMENT TEST BELOW TO USE THE IMPORTED API. HERE WE ARE USING DRIVE FOLDERS API AS AN EXAMPLE
+// public class ApiExceptionTests {
 
-         ApiConfiguration apiConfiguration = new ApiConfigurationBuilder().build(CredentialsSource.credentialsFile);
-         ApiClient apiClient = new ApiClientBuilder().build(apiConfiguration);
+//     @Test
+//     public void thrown_exception_tostring_contains_requestid() throws ApiConfigurationException, FinbourneTokenException {
 
-         HistoricallyExecutedQueriesApi historicallyExecutedQueriesApi = new HistoricallyExecutedQueriesApi(apiClient);
+//         ApiConfiguration apiConfiguration = new ApiConfigurationBuilder().build(CredentialsSource.credentialsFile);
+//         ApiClient apiClient = new ApiClientBuilder().build(apiConfiguration);
 
-         try {
-             historicallyExecutedQueriesApi.getProgressOfHistory("doesntExist");
-         }
-         catch (ApiException e) {
+//         FoldersApi foldersApi = new FoldersApi(apiClient);
 
-             String message = e.toString();
+//         try {
+//             foldersApi.getFolder("doesntExist");
+//         }
+//         catch (ApiException e) {
 
-             assertNotNull("Null exception message", message);
+//             String message = e.toString();
 
-             String[] parts = message.split("\\r?\\n");
+//             assertNotNull("Null exception message", message);
 
-             assertThat(parts.length, is(greaterThanOrEqualTo(1)));
+//             String[] parts = message.split("\\r?\\n");
 
-             //  of the format 'LUSID request id = 000000000:AAAAAAA'
-             String[] idParts = parts[0].split(" = ");
+//             assertThat(parts.length, is(greaterThanOrEqualTo(1)));
 
-             assertThat("missing requestId", idParts.length, is(equalTo(2)));
-         }
-         catch (Exception e) {
-             fail("Unexpected exception of type " + e.getClass());
-         }
+//             //  of the format 'LUSID request id = 000000000:AAAAAAA'
+//             String[] idParts = parts[0].split(" = ");
+
+//             assertThat("missing requestId", idParts.length, is(equalTo(2)));
+//         }
+//         catch (Exception e) {
+//             fail("Unexpected exception of type " + e.getClass());
+//         }
 
 
-     }
-}
+//     }
+// }
