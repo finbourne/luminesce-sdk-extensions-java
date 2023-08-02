@@ -27,6 +27,14 @@ public class RetryingApiClient extends ApiClient {
 
     /*
      * Constructor for RetringApiClient
+     * sets max number of attempts to retry on a 429 response to 3
+     */
+    public RetryingApiClient() throws IllegalArgumentException {
+        this(3);
+    }
+
+    /*
+     * Constructor for RetringApiClient
      * specifying max number of attempts to retry on a 429 response
      */
     public RetryingApiClient(int maxAttempts) throws IllegalArgumentException {

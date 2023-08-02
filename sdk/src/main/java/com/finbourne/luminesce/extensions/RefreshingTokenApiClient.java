@@ -17,7 +17,7 @@ import java.util.Map;
 * header to use a valid {@link FinbourneToken} before any calls to the luminesce API.
 *
 */
-public class RefreshingTokenApiClient extends ApiClient {
+public class RefreshingTokenApiClient extends RetryingApiClient {
 
     /** Default api client to delegate actual request execution*/
     private final ApiClient apiClient;
@@ -26,6 +26,12 @@ public class RefreshingTokenApiClient extends ApiClient {
     private final RefreshingTokenProvider tokenProvider;
 
     public RefreshingTokenApiClient(ApiClient apiClient, RefreshingTokenProvider tokenProvider) {
+        this.apiClient = apiClient;
+        this.tokenProvider = tokenProvider;
+    }
+
+    public RefreshingTokenApiClient(ApiClient apiClient, RefreshingTokenProvider tokenProvider, int maxAttempts) {
+        super(maxAttempts);
         this.apiClient = apiClient;
         this.tokenProvider = tokenProvider;
     }

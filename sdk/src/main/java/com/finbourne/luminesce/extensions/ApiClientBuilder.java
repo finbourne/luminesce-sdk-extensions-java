@@ -86,7 +86,7 @@ public class ApiClientBuilder {
         // setup api client that managed submissions with latest token
         ApiClient defaultApiClient = createDefaultApiClient(apiConfiguration, httpClient, finbourneToken,
                 retryMaxAttempts);
-        return new RefreshingTokenApiClient(defaultApiClient, refreshingTokenProvider);
+        return new RefreshingTokenApiClient(defaultApiClient, refreshingTokenProvider, retryMaxAttempts);
     }
 
     ApiClient createDefaultApiClient(ApiConfiguration apiConfiguration, OkHttpClient httpClient,
