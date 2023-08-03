@@ -8,104 +8,97 @@ import com.finbourne.luminesce.extensions.auth.FinbourneTokenException;
 import okhttp3.OkHttpClient;
 
 /**
- * Utility class to build an ApiClient from a set of configuration
- */
+* Utility class to build an ApiClient from a set of configuration
+*/
 public class ApiClientBuilder {
 
+    private static final int DEFAULT_TIMEOUT_SECONDS = 10;
+
     /**
-     * Builds an ApiClient implementation configured against a secrets file.
-     * Typically used
-     * for communicating with luminesce via the APIs
-     *
-     * ApiClient implementation enables use of REFRESH tokens (see
-     * https://support.finbourne.com/using-a-refresh-token)
-     * and automatically handles token refreshing on expiry.
-     *
-     * @param apiConfiguration configuration to connect to luminesce API
-     * @return
-     *
-     * @throws FinbourneTokenException on failing to authenticate and retrieve an
-     *                                 initial {@link FinbourneToken}
-     */
+    * Builds an ApiClient implementation configured against a secrets file. Typically used
+    * for communicating with luminesce via the APIs
+    *
+    * ApiClient implementation enables use of REFRESH tokens (see https://support.finbourne.com/using-a-refresh-token)
+    * and automatically handles token refreshing on expiry.
+    *
+    * @param apiConfiguration configuration to connect to luminesce API
+    * @return
+    *
+    * @throws FinbourneTokenException on failing to authenticate and retrieve an initial {@link FinbourneToken}
+    */
     public ApiClient build(ApiConfiguration apiConfiguration) throws FinbourneTokenException {
 
         return this.build(apiConfiguration, 10, 10);
     }
 
     /**
-     * Builds an ApiClient implementation configured against a secrets file.
-     * Typically used
+     * Builds an ApiClient implementation configured against a secrets file. Typically used
      * for communicating with luminesce via the APIs
      *
-     * ApiClient implementation enables use of REFRESH tokens (see
-     * https://support.finbourne.com/using-a-refresh-token)
+     * ApiClient implementation enables use of REFRESH tokens (see https://support.finbourne.com/using-a-refresh-token)
      * and automatically handles token refreshing on expiry.
      *
      * @param apiConfiguration configuration to connect to luminesce API
-     * @param readTimeout      read timeout in seconds
-     * @param writeTimeout     write timeout in seconds
+     * @param readTimeout read timeout in seconds
+     * @param writeTimeout write timeout in seconds
+     * @param connectTimeout connect timeout in seconds
      * @return
      *
-     * @throws FinbourneTokenException on failing to authenticate and retrieve an
-     *                                 initial {@link FinbourneToken}
+     * @throws FinbourneTokenException on failing to authenticate and retrieve an initial {@link FinbourneToken}
      */
-    public ApiClient build(ApiConfiguration apiConfiguration, int readTimeout, int writeTimeout)
-            throws FinbourneTokenException {
-        return build(apiConfiguration, readTimeout, writeTimeout, 3);
+    public ApiClient build(ApiConfiguration apiConfiguration, int readTimeout, int writeTimeout, int connectTimeout, int retryMaxAttempts) throws FinbourneTokenException {
+        // http client to use for api and auth calls
+        OkHttpClient httpClient = createHttpClient(apiConfiguration, readTimeout, writeTimeout, connectTimeout);
+
+        if (apiConfiguration.getPersonalAccessToken() != null && apiConfiguration.getApiUrl() != null) {
+            //  use Personal Access Token
+            FinbourneToken finbourneToken = new FinbourneToken(apiConfiguration.getPersonalAccessToken(), null, null);
+            ApiClient defaultApiClient = createDefaultApiClient(apiConfiguration, httpClient, finbourneToken, retryMaxAttempts);
+            return defaultApiClient;
+        }
+        else {
+            // token provider to keep client authenticated with automated token refreshing
+            RefreshingTokenProvider refreshingTokenProvider = new RefreshingTokenProvider(new HttpFinbourneTokenProvider(apiConfiguration, httpClient));
+            FinbourneToken finbourneToken = refreshingTokenProvider.get();
+
+            // setup api client that managed submissions with the latest token
+            ApiClient defaultApiClient = createDefaultApiClient(apiConfiguration, httpClient, finbourneToken, retryMaxAttempts);
+            return new RefreshingTokenApiClient(defaultApiClient, refreshingTokenProvider);
+        }
     }
 
     /**
-     * Builds an ApiClient implementation configured against a secrets file.
-     * Typically used
+     * Builds an ApiClient implementation configured against a secrets file. Typically used
      * for communicating with luminesce via the APIs
      *
-     * ApiClient implementation enables use of REFRESH tokens (see
-     * https://support.finbourne.com/using-a-refresh-token)
+     * ApiClient implementation enables use of REFRESH tokens (see https://support.finbourne.com/using-a-refresh-token)
      * and automatically handles token refreshing on expiry.
      *
      * @param apiConfiguration configuration to connect to luminesce API
-     * @param readTimeout      read timeout in seconds
-     * @param writeTimeout     write timeout in seconds
-     * @param retryMaxAttempts number of times to attempt to send request (retry on
-     *                         429)
+     * @param readTimeout read timeout in seconds
+     * @param writeTimeout write timeout in seconds
      * @return
      *
-     * @throws FinbourneTokenException on failing to authenticate and retrieve an
-     *                                 initial {@link FinbourneToken}
+     * @throws FinbourneTokenException on failing to authenticate and retrieve an initial {@link FinbourneToken}
      */
-    public ApiClient build(ApiConfiguration apiConfiguration, int readTimeout, int writeTimeout, int retryMaxAttempts)
-            throws FinbourneTokenException {
-        // http client to use for api and auth calls
-        OkHttpClient httpClient = createHttpClient(apiConfiguration, readTimeout, writeTimeout);
-
-        // token provider to keep client authenticated with automated token refreshing
-        RefreshingTokenProvider refreshingTokenProvider = new RefreshingTokenProvider(
-                new HttpFinbourneTokenProvider(apiConfiguration, httpClient));
-        FinbourneToken finbourneToken = refreshingTokenProvider.get();
-
-        // setup api client that managed submissions with latest token
-        ApiClient defaultApiClient = createDefaultApiClient(apiConfiguration, httpClient, finbourneToken,
-                retryMaxAttempts);
-        return new RefreshingTokenApiClient(defaultApiClient, refreshingTokenProvider, retryMaxAttempts);
+    public ApiClient build(ApiConfiguration apiConfiguration, int readTimeout, int writeTimeout) throws FinbourneTokenException {
+        return this.build(apiConfiguration, readTimeout, writeTimeout, DEFAULT_TIMEOUT_SECONDS, 3);
     }
 
-    ApiClient createDefaultApiClient(ApiConfiguration apiConfiguration, OkHttpClient httpClient,
-            FinbourneToken finbourneToken) throws FinbourneTokenException {
-        return createDefaultApiClient(apiConfiguration, httpClient, finbourneToken, 3);
+    ApiClient createDefaultApiClient(ApiConfiguration apiConfiguration, OkHttpClient httpClient, FinbourneToken finbourneToken) throws FinbourneTokenException {
+        return this.createDefaultApiClient(apiConfiguration, httpClient, finbourneToken, 3);
     }
 
-    ApiClient createDefaultApiClient(ApiConfiguration apiConfiguration, OkHttpClient httpClient,
-            FinbourneToken finbourneToken, int retryMaxAttempts) throws FinbourneTokenException {
+    ApiClient createDefaultApiClient(ApiConfiguration apiConfiguration, OkHttpClient httpClient, FinbourneToken finbourneToken, int retryMaxAttempts) throws FinbourneTokenException {
         ApiClient apiClient = createApiClient(retryMaxAttempts);
 
         apiClient.setHttpClient(httpClient);
 
         if (finbourneToken.getAccessToken() == null) {
-            throw new FinbourneTokenException(
-                    "Cannot construct an API client with a null authorisation header. Ensure " +
-                            "finbourne token generated is valid");
+            throw new FinbourneTokenException("Cannot construct an API client with a null authorisation header. Ensure " +
+                    "finbourne token generated is valid");
         } else {
-            apiClient.addDefaultHeader("Authorization", "Bearer " + finbourneToken.getAccessToken());
+            apiClient.setAccessToken(finbourneToken.getAccessToken());
         }
 
         if (apiConfiguration.getApplicationName() != null) {
@@ -113,11 +106,11 @@ public class ApiClientBuilder {
         }
         apiClient.setBasePath(apiConfiguration.getApiUrl());
 
-        return apiClient;
+        return  apiClient;
     }
 
-    private OkHttpClient createHttpClient(ApiConfiguration apiConfiguration, int readTimeout, int writeTimeout) {
-        return new HttpClientFactory().build(apiConfiguration, readTimeout, writeTimeout);
+    private OkHttpClient createHttpClient(ApiConfiguration apiConfiguration, int readTimeout, int writeTimeout, int connectTimeout){
+        return new HttpClientFactory().build(apiConfiguration, readTimeout, writeTimeout, connectTimeout);
     }
 
     // allows us to mock out api client for testing purposes
