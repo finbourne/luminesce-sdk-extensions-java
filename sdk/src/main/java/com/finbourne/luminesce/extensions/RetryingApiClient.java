@@ -67,7 +67,7 @@ public class RetryingApiClient extends ApiClient {
                     Map<String, List<String>> responseHeaders = e.getResponseHeaders();
                     try {
                         String retryAfterHeader = responseHeaders.get("retry-after").get(0);
-                        long retryAfter = Long.parseLong(retryAfterHeader);
+                        long retryAfter = Long.parseLong(retryAfterHeader) * 1000;
                         Thread.sleep(retryAfter);
                     } catch (InterruptedException exc) {
                         throw new ApiException("Failed to retry, thread interrupted", e, 429, responseHeaders,
@@ -101,7 +101,7 @@ public class RetryingApiClient extends ApiClient {
                     callback.onFailure(e, statusCode, responseHeaders);
                 } else {
                     String retryAfterHeader = responseHeaders.get("retry-after").get(0);
-                    long retryAfter = Long.parseLong(retryAfterHeader);
+                    long retryAfter = Long.parseLong(retryAfterHeader) * 1000;
                     try {
                         Thread.sleep(retryAfter);
                     } catch (InterruptedException exc) {

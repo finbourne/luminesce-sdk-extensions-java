@@ -137,7 +137,7 @@ public class RetryingApiClientTest {
         MockWebServer server = new MockWebServer();
         MockResponse mockTooManyRequestsResponse = new MockResponse()
                 .setResponseCode(429)
-                .addHeader("Retry-After", 10);
+                .addHeader("Retry-After", 1);
         MockResponse mockSuccessfulResponse = new MockResponse()
                 .setResponseCode(200);
 
@@ -156,7 +156,7 @@ public class RetryingApiClientTest {
         final int MAX_ATTEMPTS = 2;
         ApiClient retryingApiClient = new RetryingApiClient(MAX_ATTEMPTS);
         retryingApiClient.executeAsync(call, null, apiCallBackSpy);
-        verify(apiCallBackSpy, timeout(100)).onSuccess(any(), eq(200), any());
+        verify(apiCallBackSpy, timeout(2000)).onSuccess(any(), eq(200), any());
         server.close();
     }
 
@@ -166,7 +166,7 @@ public class RetryingApiClientTest {
         MockWebServer server = new MockWebServer();
         MockResponse mockTooManyRequestsResponse = new MockResponse()
                 .setResponseCode(429)
-                .addHeader("Retry-After", 10);
+                .addHeader("Retry-After", 1);
         MockResponse mockSuccessfulResponse = new MockResponse()
                 .setResponseCode(200);
 
@@ -186,7 +186,7 @@ public class RetryingApiClientTest {
         final int MAX_ATTEMPTS = 2;
         ApiClient retryingApiClient = new RetryingApiClient(MAX_ATTEMPTS);
         retryingApiClient.executeAsync(call, null, apiCallBackSpy);
-        verify(apiCallBackSpy, timeout(100)).onFailure(any(), eq(429), any());
+        verify(apiCallBackSpy, timeout(2000)).onFailure(any(), eq(429), any());
         verify(apiCallBackSpy, never()).onSuccess(any(), eq(200), any());
         server.close();
     }
